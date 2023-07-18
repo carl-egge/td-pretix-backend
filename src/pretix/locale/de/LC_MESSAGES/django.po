@@ -1042,12 +1042,6 @@ msgstr "Veranstaltungstitel"
 msgid "Short form"
 msgstr "Kurzform"
 
-#: pretix/base/exporters/events.py:58 pretix/base/models/event.py:551
-#: pretix/base/models/organizer.py:89
-#: pretix/control/templates/pretixcontrol/organizers/index.html:47
-msgid "Event description"
-msgstr "Veranstaltungsbeschreibung"
-
 #: pretix/base/exporters/events.py:59 pretix/base/models/event.py:553
 msgid "Shop is live"
 msgstr "Shop ist live"
