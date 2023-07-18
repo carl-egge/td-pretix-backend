@@ -161,6 +161,7 @@ class EventWizardBasicsForm(I18nModelForm):
         fields = [
             'name',
             'slug',
+            'desc',
             'currency',
             'date_from',
             'date_to',
@@ -432,6 +433,7 @@ class EventUpdateForm(I18nModelForm):
         fields = [
             'name',
             'slug',
+            'desc',
             'currency',
             'date_from',
             'date_to',

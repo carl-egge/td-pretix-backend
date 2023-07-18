@@ -503,6 +503,8 @@ class Event(EventMixin, LoggedModel):
     :param slug: A short, alphanumeric, all-lowercase name for use in URLs. The slug has to
                  be unique among the events of the same organizer.
     :type slug: str
+    :param desc: A description of the event
+    :type desc: str
     :param live: Whether or not the shop is publicly accessible
     :type live: bool
     :param currency: The currency of all prices and payments of this event
@@ -550,6 +552,10 @@ class Event(EventMixin, LoggedModel):
             EventSlugBanlistValidator()
         ],
         verbose_name=_("Short form"),
+    )
+    desc = I18nTextField(
+        null=True, blank=True,
+        verbose_name=_("Event description"),
     )
     live = models.BooleanField(default=False, verbose_name=_("Shop is live"))
     currency = models.CharField(max_length=10,
