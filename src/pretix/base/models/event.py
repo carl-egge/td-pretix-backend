@@ -508,6 +508,12 @@ def default_sales_channels():  # kept for legacy migration
 
     return list(get_all_sales_channel_types().keys())
 
+def eventpicture_upload_to(instance, filename: str) -> str:
+    return 'pub/%s/%s/event-%s-%s.%s' % (
+        instance.organizer.slug, instance.slug, instance.id,
+        str(uuid.uuid4()), filename.split('.')[-1]
+    )
+
 
 @settings_hierarkey.add(parent_field='organizer', cache_namespace='event')
 class Event(EventMixin, LoggedModel):
@@ -526,6 +532,8 @@ class Event(EventMixin, LoggedModel):
     :type slug: str
     :param desc: A description of the event
     :type desc: str
+    :param picture: A logo or picture representing the event
+    :type picture: File
     :param live: Whether or not the shop is publicly accessible
     :type live: bool
     :param currency: The currency of all prices and payments of this event
@@ -579,6 +587,12 @@ class Event(EventMixin, LoggedModel):
     desc = I18nTextField(
         null=True, blank=True,
         verbose_name=_("Event description"),
+    )
+    picture = models.ImageField(
+        verbose_name=_("Event picture"),
+        null=True, blank=True, max_length=255,
+        upload_to=eventpicture_upload_to,
+        # validators=[ImageSizeValidator()]
     )
     live = models.BooleanField(default=False, verbose_name=_("Shop is live"))
     currency = models.CharField(max_length=10,
