@@ -33,6 +33,7 @@
 # License for the specific language governing permissions and limitations under the License.
 
 import logging
+import os.path
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -49,6 +50,7 @@ from rest_framework.relations import SlugRelatedField
 from pretix.api.serializers import CompatibleJSONField
 from pretix.api.serializers.i18n import I18nAwareModelSerializer
 from pretix.api.serializers.settings import SettingsSerializer
+from pretix.api.serializers.fields import UploadedFileField
 from pretix.base.models import Device, Event, TaxRule, TeamAPIToken
 from pretix.base.models.event import SubEvent
 from pretix.base.models.items import (
@@ -163,6 +165,9 @@ class ValidKeysField(Field):
 
 class EventSerializer(I18nAwareModelSerializer):
     meta_data = MetaDataField(required=False, source='*')
+    picture = UploadedFileField(required=False, allow_null=True, allowed_types=(
+        'image/png', 'image/jpeg', 'image/gif'
+    ), max_size=settings.FILE_UPLOAD_MAX_SIZE_IMAGE)
     item_meta_properties = MetaPropertyField(required=False, source='*')
     plugins = PluginsField(required=False, source='*')
     seat_category_mapping = SeatCategoryMappingField(source='*', required=False)
@@ -176,7 +181,7 @@ class EventSerializer(I18nAwareModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('name', 'slug', 'desc', 'live', 'testmode', 'currency', 'date_from',
+        fields = ('name', 'slug', 'desc', 'picture', 'live', 'testmode', 'currency', 'date_from',
                   'date_to', 'date_admission', 'is_public', 'presale_start',
                   'presale_end', 'location', 'geo_lat', 'geo_lon', 'has_subevents', 'meta_data', 'seating_plan',
                   'plugins', 'seat_category_mapping', 'timezone', 'item_meta_properties', 'valid_keys',
@@ -290,12 +295,14 @@ class EventSerializer(I18nAwareModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         meta_data = validated_data.pop('meta_data', None)
+        picture = validated_data.pop('picture', None)
         item_meta_properties = validated_data.pop('item_meta_properties', None)
         validated_data.pop('seat_category_mapping', None)
         plugins = validated_data.pop('plugins', settings.PRETIX_PLUGINS_DEFAULT.split(','))
         tz = validated_data.pop('timezone', None)
         event = super().create(validated_data)
-
+        if picture:
+            event.picture.save(os.path.basename(picture.name), picture)
         if tz:
             event.settings.timezone = tz
 
@@ -331,11 +338,14 @@ class EventSerializer(I18nAwareModelSerializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         meta_data = validated_data.pop('meta_data', None)
+        picture = validated_data.pop('picture', None)
         item_meta_properties = validated_data.pop('item_meta_properties', None)
         plugins = validated_data.pop('plugins', None)
         seat_category_mapping = validated_data.pop('seat_category_mapping', None)
         tz = validated_data.pop('timezone', None)
         event = super().update(instance, validated_data)
+        if picture:
+            event.picture.save(os.path.basename(picture.name), picture)
 
         if tz:
             event.settings.timezone = tz

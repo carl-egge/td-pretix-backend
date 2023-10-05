@@ -7,7 +7,7 @@
         Step {{ step }}
     {% endblocktrans %}</small></h1>
     {% if has_organizer %}
-        <form action="" method="post" class="form-horizontal">
+        <form action="" method="post" class="form-horizontal" enctype="multipart/form-data">
             {% csrf_token %}
             {{ wizard.management_form }}
             {{ wizard.prefix_form }}

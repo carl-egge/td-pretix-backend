@@ -29,7 +29,7 @@ from .devices import Device, Gate
 from .discount import Discount
 from .event import (
     Event, Event_SettingsStore, EventLock, EventMetaProperty, EventMetaValue,
-    SubEvent, SubEventMetaValue, generate_invite_token,
+    SubEvent, SubEventMetaValue, generate_invite_token, eventpicture_upload_to,
 )
 from .exports import ScheduledEventExport, ScheduledOrganizerExport
 from .giftcards import GiftCard, GiftCardAcceptance, GiftCardTransaction

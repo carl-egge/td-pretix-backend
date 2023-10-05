@@ -31,7 +31,7 @@
 # Unless required by applicable law or agreed to in writing, software distributed under the Apache License 2.0 is
 # distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations under the License.
-import re
+import re, os.path
 
 from django.conf import settings
 from django.contrib import messages
@@ -59,6 +59,7 @@ from pretix.control.forms.filter import EventFilterForm
 from pretix.control.permissions import OrganizerPermissionRequiredMixin
 from pretix.control.views import PaginationMixin
 
+from django.core.files.storage import FileSystemStorage
 
 class EventList(PaginationMixin, ListView):
     model = Event
@@ -152,6 +153,9 @@ class EventWizard(SafeSessionWizardView):
     condition_dict = {
         'copy': condition_copy
     }
+    # The file_storage is needed to save the uploaded image to the media folder during the wizard process
+    # Ideally, we should clean up the tmp files regularly since only finished events are saved in the database
+    file_storage = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'tmp_event_images'))
 
     def get_form_initial(self, step):
         initial = super().get_form_initial(step)
@@ -163,6 +167,7 @@ class EventWizard(SafeSessionWizardView):
             elif step == 'basics':
                 initial['request'] = self.request
                 initial['name'] = self.clone_from.name
+                initial['desc'] = self.clone_from.desc
 
                 if re.match('^.*-[0-9]+$', self.clone_from.slug):
                     # slug-2 -> slug-3
@@ -171,6 +176,7 @@ class EventWizard(SafeSessionWizardView):
                     # slug -> slug-2
                     initial['slug'] = self.clone_from.slug + '-2'
 
+                initial['picture'] = self.clone_from.picture
                 initial['currency'] = self.clone_from.currency
                 initial['date_from'] = self.clone_from.date_from
                 initial['date_to'] = self.clone_from.date_to
