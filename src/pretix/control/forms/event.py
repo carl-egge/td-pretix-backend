@@ -41,6 +41,7 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import NON_FIELD_ERRORS, ValidationError
 from django.core.validators import MaxValueValidator
+from django.core.files.uploadedfile import UploadedFile
 from django.db.models import Prefetch, Q, prefetch_related_objects
 from django.forms import (
     CheckboxSelectMultiple, formset_factory, inlineformset_factory,
@@ -69,7 +70,7 @@ from pretix.base.settings import (
 from pretix.base.validators import multimail_validate
 from pretix.control.forms import (
     MultipleLanguagesWidget, SlugWidget, SplitDateTimeField,
-    SplitDateTimePickerWidget,
+    SplitDateTimePickerWidget, SizeValidationMixin,
 )
 from pretix.control.forms.widgets import Select2
 from pretix.helpers.countries import CachedCountries
@@ -141,7 +142,6 @@ class EventWizardBasicsForm(I18nModelForm):
         min_value=Decimal("0.00"),
         required=False
     )
-
     team = forms.ModelChoiceField(
         label=_("Grant access to team"),
         help_text=_("You are allowed to create events under this organizer, however you do not have permission "
@@ -158,6 +158,7 @@ class EventWizardBasicsForm(I18nModelForm):
             'name',
             'slug',
             'desc',
+            'picture',
             'currency',
             'date_from',
             'date_to',
@@ -241,6 +242,14 @@ class EventWizardBasicsForm(I18nModelForm):
                 code='duplicate_slug'
             )
         return slug
+
+    def clean_picture(self):
+        value = self.cleaned_data.get('picture')
+        if isinstance(value, UploadedFile) and value.size > settings.FILE_UPLOAD_MAX_SIZE_IMAGE:
+            raise forms.ValidationError(_("Please do not upload files larger than {size}!").format(
+                size=SizeValidationMixin._sizeof_fmt(settings.FILE_UPLOAD_MAX_SIZE_IMAGE)
+            ))
+        return value
 
     @staticmethod
     def has_control_rights(user, organizer, session):
@@ -422,6 +431,14 @@ class EventUpdateForm(I18nModelForm):
         if self.change_slug:
             return self.cleaned_data['slug']
         return self.instance.slug
+    
+    def clean_picture(self):
+        value = self.cleaned_data.get('picture')
+        if isinstance(value, UploadedFile) and value.size > settings.FILE_UPLOAD_MAX_SIZE_IMAGE:
+            raise forms.ValidationError(_("Please do not upload files larger than {size}!").format(
+                size=SizeValidationMixin._sizeof_fmt(settings.FILE_UPLOAD_MAX_SIZE_IMAGE)
+            ))
+        return value
 
     class Meta:
         model = Event
@@ -430,6 +447,7 @@ class EventUpdateForm(I18nModelForm):
             'name',
             'slug',
             'desc',
+            'picture',
             'currency',
             'date_from',
             'date_to',
