@@ -181,7 +181,7 @@ class EventSerializer(I18nAwareModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('name', 'slug', 'desc', 'picture', 'live', 'testmode', 'currency', 'date_from',
+        fields = ('name', 'slug', 'desc', 'subtitle', 'picture', 'live', 'testmode', 'currency', 'date_from',
                   'date_to', 'date_admission', 'is_public', 'presale_start',
                   'presale_end', 'location', 'geo_lat', 'geo_lon', 'has_subevents', 'meta_data', 'seating_plan',
                   'plugins', 'seat_category_mapping', 'timezone', 'item_meta_properties', 'valid_keys',

@@ -511,6 +511,8 @@ class Event(EventMixin, LoggedModel):
     :type slug: str
     :param desc: A description of the event
     :type desc: str
+    :param subtitle: A subtitle of the event, e.g. author or tagline
+    :type subtitle: str
     :param picture: A logo or picture representing the event
     :type picture: File
     :param live: Whether or not the shop is publicly accessible
@@ -564,6 +566,11 @@ class Event(EventMixin, LoggedModel):
     desc = I18nTextField(
         null=True, blank=True,
         verbose_name=_("Event description"),
+    )
+    subtitle = I18nCharField(
+        max_length=200,
+        null=True, blank=True,
+        verbose_name=_("Event subtitle"),
     )
     picture = models.ImageField(
         verbose_name=_("Event picture"),
